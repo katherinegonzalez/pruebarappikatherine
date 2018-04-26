@@ -19,6 +19,9 @@ public class GeneralResponse {
     @SerializedName("total_pages")
     private int totalPages;
 
+    public GeneralResponse() {
+    }
+
     public int getPage() {
         return page;
     }

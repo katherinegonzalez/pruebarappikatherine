@@ -5,6 +5,11 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="light_grey">#D0D0D0</color>
+    <color name="grey">#e4e4e4</color>
     <color name="light_blue">#c2303240</color>
+
+    <color name="dot_light_screen">#ffffff</color>
+    <color name="dot_dark_screen">#8a898b</color>
 </resources>

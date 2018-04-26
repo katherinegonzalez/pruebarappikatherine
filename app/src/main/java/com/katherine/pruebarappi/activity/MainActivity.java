@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import com.katherine.pruebarappi.R;
 import com.katherine.pruebarappi.list.AdapterMovie;
-import com.katherine.pruebarappi.list.ItemMovie;
 import com.katherine.pruebarappi.model.GeneralResponse;
 import com.katherine.pruebarappi.model.Movie;
 import com.katherine.pruebarappi.res.ApiClient;
@@ -33,7 +32,7 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
-    private static final String API_KEY = "f51ce15a6a2b1e875adfd9b4ba6ada24";
+
     private Spinner spinnerMovies;
     private RecyclerView movieList;
     private List<Movie> itemsMovie = new ArrayList<>();;
@@ -93,13 +92,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Call<GeneralResponse> call = null;
         switch (type){
             case "Popular":
-                call = apiService.getPopularMovies(API_KEY);
+                call = apiService.getPopularMovies(Util.API_KEY);
                 break;
             case "Top Rated":
-                call = apiService.getTopRatedMovies(API_KEY);
+                call = apiService.getTopRatedMovies(Util.API_KEY);
                 break;
             case "Upcoming":
-                call = apiService.getUpcomingMovies(API_KEY);
+                call = apiService.getUpcomingMovies(Util.API_KEY);
                 break;
         }
 
@@ -169,5 +168,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             return null;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(Util.pDialog != null)
+            Util.pDialog.dismiss();
     }
 }

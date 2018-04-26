@@ -2,7 +2,11 @@ package com.katherine.pruebarappi.list;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.location.LocationListener;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,13 +14,29 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.katherine.pruebarappi.R;
+import com.katherine.pruebarappi.activity.DetailMoviePagerActivity;
+import com.katherine.pruebarappi.activity.MainActivity;
+import com.katherine.pruebarappi.model.GeneralResponse;
 import com.katherine.pruebarappi.model.Movie;
+import com.katherine.pruebarappi.model.MovieDetailResponse;
+import com.katherine.pruebarappi.model.VideoResponse;
+import com.katherine.pruebarappi.res.ApiClient;
+import com.katherine.pruebarappi.res.ApiServiceClientInterface;
+import com.katherine.pruebarappi.util.Dialogs;
+import com.katherine.pruebarappi.util.Util;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by katherinegonzalez on 25/04/18.
@@ -41,7 +61,7 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
 
     @Override
     public void onBindViewHolder(AdapterMovieViewHolder holder, int position) {
-        Movie movie = itemsMovies.get(position);
+        final Movie movie = itemsMovies.get(position);
 
 
         holder.txtTitle.setText(movie.getTitle());
@@ -66,8 +86,9 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
         holder.layoutMovie.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Show detail movie
-                System.out.println("CLICK EN DETALLE");
+
+                new MovieDetail().execute("movieDetail", movie.getId().toString());
+
             }
         });
     }
@@ -94,6 +115,142 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
             txtTitle = (TextView) itemView.findViewById(R.id.txt_title);
             txtScore = (TextView) itemView.findViewById(R.id.txt_score);
             txtLanguage = (TextView) itemView.findViewById(R.id.txt_language);
+        }
+    }
+
+    public void getMovieDetail(Long id){
+
+        ApiServiceClientInterface apiService = ApiClient.getClient().create(ApiServiceClientInterface.class);
+
+        Call<MovieDetailResponse> call = apiService.getMovieDetails(id, Util.API_KEY);
+        call.enqueue(new Callback<MovieDetailResponse>() {
+
+            @Override
+            public void onResponse(Call<MovieDetailResponse> call, final Response<MovieDetailResponse> response) {
+                System.out.println("ENTRA A ON RESPONSE PELICULAS: " + response.body());
+                System.out.println("ENTRA A ON RESPONSE RAW PELICULAS: " + response.raw());
+                System.out.println("ENTRA A ON RESPONSE CODE PELICULAS: " + response.code());
+                System.out.println("ENTRA A ON RESPONSE HEADERS PELICULAS: " + response.headers());
+
+                if(response.isSuccessful()){
+
+                    if(response.body() != null){
+                        Util.movieDetailResponse = new MovieDetailResponse();
+                        Util.movieDetailResponse = response.body();
+                        if(response.body().getVideo()){
+                            new MovieDetail().execute("video", response.body().getId().toString());
+                        }else{ //Sino tiene video ir directamente al detalle
+                            Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
+                            activity.startActivity(myIntent);
+                        }
+
+                    }
+
+                }else{
+                    if(Util.pDialog != null)
+                        Util.pDialog.dismiss();
+
+                    String error = "Ha ocurrido un error al intentar conectar con el servidor! Intente nuevamente";
+                    try {
+                        JSONObject jObjError = new JSONObject(response.errorBody().string());
+                        Log.d("jObjError", jObjError +"");
+                        error= jObjError.get("error").toString();
+                        Log.d("ERROR PELICULAS", error);
+                    } catch (Exception e) {
+                        Log.d("EXCEPCION ERROR", e +"");
+                    }
+
+                    Toast.makeText(activity, error, Toast.LENGTH_LONG).show();
+
+                }
+
+
+            }
+
+            @Override
+            public void onFailure(Call<MovieDetailResponse> call, Throwable t) {
+                if(Util.pDialog != null)
+                    Util.pDialog.dismiss();
+                Toast.makeText(activity, "Ha ocurrido un error al intentar conectar con el servidor! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void getVideo(Long id){
+
+        ApiServiceClientInterface apiService = ApiClient.getClient().create(ApiServiceClientInterface.class);
+
+        Call<VideoResponse> call = apiService.getVideo(id, Util.API_KEY);
+        call.enqueue(new Callback<VideoResponse>() {
+
+            @Override
+            public void onResponse(Call<VideoResponse> call, final Response<VideoResponse> response) {
+                System.out.println("ENTRA A ON RESPONSE PELICULAS: " + response.body());
+                System.out.println("ENTRA A ON RESPONSE RAW PELICULAS: " + response.raw());
+                System.out.println("ENTRA A ON RESPONSE CODE PELICULAS: " + response.code());
+                System.out.println("ENTRA A ON RESPONSE HEADERS PELICULAS: " + response.headers());
+
+                if(response.isSuccessful()){
+
+                    if(response.body() != null){
+                        Util.VIDEO_KEY = response.body().getResults().get(0).getKey(); //Tomo unicamente el primer video
+
+                        Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
+                        activity.startActivity(myIntent);
+                    }
+
+                }else{
+                    if(Util.pDialog != null)
+                        Util.pDialog.dismiss();
+
+                    String error = "Ha ocurrido un error al intentar conectar con el servidor! Intente nuevamente";
+                    try {
+                        JSONObject jObjError = new JSONObject(response.errorBody().string());
+                        Log.d("jObjError", jObjError +"");
+                        error= jObjError.get("error").toString();
+                        Log.d("ERROR PELICULAS", error);
+                    } catch (Exception e) {
+                        Log.d("EXCEPCION ERROR", e +"");
+                    }
+
+                    Toast.makeText(activity, error, Toast.LENGTH_LONG).show();
+
+                }
+
+
+            }
+
+            @Override
+            public void onFailure(Call<VideoResponse> call, Throwable t) {
+                if(Util.pDialog != null)
+                    Util.pDialog.dismiss();
+                Toast.makeText(activity, "Ha ocurrido un error al intentar conectar con el servidor! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public class MovieDetail extends AsyncTask<String, String, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Dialogs.definirProgressDialog(activity);
+            Util.pDialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            switch (strings[0]){
+                case "movieDetail":
+                    getMovieDetail(Long.parseLong(strings[1]));
+                    break;
+                case "video":
+                    getVideo(Long.parseLong(strings[1]));
+                    break;
+            }
+
+            return null;
         }
     }
 }
