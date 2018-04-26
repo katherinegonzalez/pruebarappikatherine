@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.katherine.pruebarappi.R;
 import com.katherine.pruebarappi.model.Movie;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +42,19 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
     @Override
     public void onBindViewHolder(AdapterMovieViewHolder holder, int position) {
         Movie movie = itemsMovies.get(position);
+
+
         holder.txtTitle.setText(movie.getTitle());
         holder.txtScore.setText(movie.getVoteAverage().toString());
 
         String language = "";
+
+        if(movie.getPosterPath() != null){
+            if(!movie.getPosterPath().equals("")){
+                Picasso.with(activity).load("https://image.tmdb.org/t/p/w500"+ movie.getPosterPath()).into(holder.imageMovie);
+            }
+        }
+
         if(movie.getOriginalLanguage().equals("en")){
            language = "Inglés";
         }

@@ -1,5 +1,6 @@
 package com.katherine.pruebarappi.activity;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,6 +19,8 @@ import com.katherine.pruebarappi.model.GeneralResponse;
 import com.katherine.pruebarappi.model.Movie;
 import com.katherine.pruebarappi.res.ApiClient;
 import com.katherine.pruebarappi.res.ApiServiceClientInterface;
+import com.katherine.pruebarappi.util.Dialogs;
+import com.katherine.pruebarappi.util.Util;
 
 import org.json.JSONObject;
 
@@ -65,13 +68,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         adapterMovies = new AdapterMovie(this, itemsMovie);
         movieList.setAdapter(adapterMovies);
 
+        if(Util.pDialog != null)
+            Util.pDialog.dismiss();
+
     }
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         type = adapterView.getItemAtPosition(i).toString();
 
-        getMovies(type);
+        new Movies().execute();
 
     }
 
@@ -112,10 +118,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         inicializarAdapter();
 
                     }else{
+                        if(Util.pDialog != null)
+                            Util.pDialog.dismiss();
                         Toast.makeText(MainActivity.this, "En este momento no hay películas para mostrar. Intente mas tarde", Toast.LENGTH_LONG).show();
                     }
 
                 }else{
+                    if(Util.pDialog != null)
+                        Util.pDialog.dismiss();
 
                     String error = "Ha ocurrido un error al intentar conectar con el servidor! Intente nuevamente";
                     try {
@@ -129,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                     Toast.makeText(MainActivity.this, error, Toast.LENGTH_LONG).show();
 
-
                 }
 
 
@@ -137,8 +146,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             @Override
             public void onFailure(Call<GeneralResponse> call, Throwable t) {
+                if(Util.pDialog != null)
+                    Util.pDialog.dismiss();
                 Toast.makeText(MainActivity.this, "Ha ocurrido un error al intentar conectar con el servidor! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    public class Movies extends AsyncTask<String, String, String>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Dialogs.definirProgressDialog(MainActivity.this);
+            Util.pDialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            getMovies(type);
+
+            return null;
+        }
     }
 }
