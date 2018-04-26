@@ -5,11 +5,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.katherine.pruebarappi.R;
@@ -30,7 +33,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, TextWatcher {
 
 
     private Spinner spinnerMovies;
@@ -38,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private List<Movie> itemsMovie = new ArrayList<>();;
     private AdapterMovie adapterMovies;
     private String type = "Popular";
+    private TextView searchFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMovies.setAdapter(adapter);
         spinnerMovies.setOnItemSelectedListener(this);
+
+        searchFilter = (TextView) findViewById(R.id.search_filter);
+        searchFilter.addTextChangedListener(this);
     }
 
     public void inicializarAdapter(){
@@ -152,6 +159,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        //adapterMovies.getFilter().filter(charSequence);
+    }
+
+    @Override
+    public void afterTextChanged(Editable editable) {
+        adapterMovies.getFilter().filter(editable.toString());
+        // refreshing recycler view
+        adapterMovies.notifyDataSetChanged();
+        movieList.setAdapter(adapterMovies);
+
+    }
+
     public class Movies extends AsyncTask<String, String, String>{
 
         @Override
@@ -170,10 +196,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if(Util.pDialog != null)
             Util.pDialog.dismiss();
     }
+
 }

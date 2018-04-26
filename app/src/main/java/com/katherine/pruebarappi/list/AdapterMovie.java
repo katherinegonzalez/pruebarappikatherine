@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -42,14 +44,16 @@ import retrofit2.Response;
  * Created by katherinegonzalez on 25/04/18.
  */
 
-public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovieViewHolder> {
+public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovieViewHolder> implements Filterable{
 
     protected Activity activity;
     protected List<Movie> itemsMovies;
+    protected List<Movie> itemsMoviesFiltered;
 
     public AdapterMovie(Activity activity, List<Movie> itemsMovies) {
         this.activity = activity;
         this.itemsMovies = itemsMovies;
+        this.itemsMoviesFiltered = itemsMovies;
     }
 
     @Override
@@ -61,7 +65,7 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
 
     @Override
     public void onBindViewHolder(AdapterMovieViewHolder holder, int position) {
-        final Movie movie = itemsMovies.get(position);
+        final Movie movie = itemsMoviesFiltered.get(position);
 
 
         holder.txtTitle.setText(movie.getTitle());
@@ -95,7 +99,40 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
 
     @Override
     public int getItemCount() {
-        return itemsMovies.size();
+        return itemsMoviesFiltered.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString();
+                if (charString.isEmpty()) {
+                    itemsMoviesFiltered = itemsMovies;
+                } else {
+                    List<Movie> filteredList = new ArrayList<>();
+                    for (Movie row : itemsMovies) {
+
+                        if (row.getTitle().toLowerCase().contains(charString.toLowerCase()) || row.getOriginalTitle().contains(charSequence)) {
+                            filteredList.add(row);
+                        }
+                    }
+
+                    itemsMoviesFiltered = filteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = itemsMoviesFiltered;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                itemsMoviesFiltered = (ArrayList<Movie>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public class AdapterMovieViewHolder extends RecyclerView.ViewHolder{
