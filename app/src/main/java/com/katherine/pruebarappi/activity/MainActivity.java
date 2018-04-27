@@ -1,5 +1,6 @@
 package com.katherine.pruebarappi.activity;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,6 +22,8 @@ import com.katherine.pruebarappi.model.GeneralResponse;
 import com.katherine.pruebarappi.model.Movie;
 import com.katherine.pruebarappi.res.ApiClient;
 import com.katherine.pruebarappi.res.ApiServiceClientInterface;
+import com.katherine.pruebarappi.storage.SaveInCache;
+import com.katherine.pruebarappi.util.ConvertGson;
 import com.katherine.pruebarappi.util.Dialogs;
 import com.katherine.pruebarappi.util.NetValidation;
 import com.katherine.pruebarappi.util.Util;
@@ -39,16 +42,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private Spinner spinnerMovies;
     private RecyclerView movieList;
-    private List<Movie> itemsMovie = new ArrayList<>();;
+    private List<Movie> itemsMovie = new ArrayList<>();
+    private List<Movie> itemsMoviePopular = new ArrayList<>();
+    private List<Movie> itemsMovieTopRated = new ArrayList<>();
+    private List<Movie> itemsMovieUpcoming = new ArrayList<>();
     private AdapterMovie adapterMovies;
     private String type = "Popular";
     private TextView searchFilter;
     private NetValidation netValidation = new NetValidation();
+    private SaveInCache saveInCache = new SaveInCache();
+    ConvertGson convertGson = new ConvertGson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         //https://developers.themoviedb.org/3/movies/get-movie-videos
 
@@ -83,14 +92,46 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
+    public void saveData(GeneralResponse generalResponse, String filename){
+        String jsonMovieList = convertGson.serializingGson(generalResponse);
+        saveInCache.saveInCache(this, filename, jsonMovieList);
+
+    }
+
+    public String filename(){
+        String filename = "";
+        switch (type){
+            case "Popular":
+                filename = "moviefilepopular";
+                break;
+            case "Top Rated":
+                filename = "moviefiletoprated";
+                break;
+            case "Upcoming":
+                filename = "moviefileupcoming";
+                break;
+        }
+        return filename;
+    }
+
+
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         type = adapterView.getItemAtPosition(i).toString();
 
         if(netValidation.isNet(MainActivity.this)){ //Si hay internet
-
-        }else{
             new Movies().execute();
+        }else{
+            if(!saveInCache.getDataInCache(this, filename()).isEmpty()){ //Si no hay internet reviso los datos que hay en cahche
+                GeneralResponse generalResponse = convertGson.deserializingGson(saveInCache.getDataInCache(this, filename()));
+                itemsMovie = generalResponse.getResults();
+                inicializarAdapter();
+            }else{
+                Toast.makeText(MainActivity.this, "En este momento no hay películas para mostrar en esta categoría. Intente más tarde cuando tenga conexión a internet", Toast.LENGTH_LONG).show();
+                itemsMovie = new ArrayList<>();
+                inicializarAdapter();
+
+            }
         }
 
     }
@@ -128,6 +169,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 if(response.isSuccessful()){
                     if(!response.body().getResults().isEmpty()){
+
+                        saveData(response.body(), filename()); //Save data in chaché
+
                         itemsMovie = response.body().getResults();
                         inicializarAdapter();
 
