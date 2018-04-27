@@ -1,16 +1,20 @@
 package com.katherine.pruebarappi.fragments;
 
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.katherine.pruebarappi.R;
+import com.katherine.pruebarappi.util.NetValidation;
 import com.katherine.pruebarappi.util.Util;
 import com.squareup.picasso.Picasso;
 
@@ -22,7 +26,8 @@ public class DetailMovie1Fragment extends Fragment {
     private View v;
     private TextView txtTitleMovie, txtOverview;
     private ImageView imgMovie;
-
+    private String title = "", overview = "", imagepath = "";
+    private NetValidation netValidation = new NetValidation();
 
     public DetailMovie1Fragment() {
         // Required empty public constructor
@@ -44,15 +49,36 @@ public class DetailMovie1Fragment extends Fragment {
         txtOverview = v.findViewById(R.id.txt_overview);
         imgMovie = v.findViewById(R.id.img_movie);
 
-        txtTitleMovie.setText(Util.movieDetailResponse.getTitle());
-        txtOverview.setText(Util.movieDetailResponse.getOverview());
+        setData();
 
-        if(Util.movieDetailResponse.getBackdropPath() != null){
-            if(!Util.movieDetailResponse.getBackdropPath().equals("")){
-                Picasso.with(getActivity()).load("https://image.tmdb.org/t/p/w500"+ Util.movieDetailResponse.getBackdropPath()).into(imgMovie);
-            }
+        txtTitleMovie.setText(title);
+        txtOverview.setText(overview);
+
+        if(!netValidation.isNet(getActivity())){
+            Toast.makeText(getContext(), "Para ver la imagen se requiere conexión a internet!", Toast.LENGTH_LONG).show();
         }
 
-
     }
+
+    public void setData(){
+
+        if(Util.movieDetailResponse != null){ //Si hay internet obtengo los datos del objeto que me retorna el endpoint
+            title = Util.movieDetailResponse.getTitle();
+            overview = Util.movieDetailResponse.getOverview();
+            imagepath = Util.movieDetailResponse.getBackdropPath();
+            if(imagepath != null){
+                if(!imagepath.equals("")){
+                    Picasso.with(getActivity()).load("https://image.tmdb.org/t/p/w500"+ imagepath).into(imgMovie);
+                }
+            }
+
+        }
+
+        if(Util.movieDetail != null){ //Si no hay internet obtengo los datos del objeto de la lista
+            title = Util.movieDetail.getTitle();
+            overview = Util.movieDetail.getOverview();
+            imgMovie.setImageResource(R.drawable.ic_warning_black_48dp);
+        }
+    }
+
 }

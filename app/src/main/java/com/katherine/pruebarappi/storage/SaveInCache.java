@@ -16,8 +16,6 @@ public class SaveInCache {
     private FileOutputStream outputStream;
     private FileInputStream inputStream;
 
-    Context context;
-
     public SaveInCache() {
     }
 

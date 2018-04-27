@@ -43,9 +43,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Spinner spinnerMovies;
     private RecyclerView movieList;
     private List<Movie> itemsMovie = new ArrayList<>();
-    private List<Movie> itemsMoviePopular = new ArrayList<>();
-    private List<Movie> itemsMovieTopRated = new ArrayList<>();
-    private List<Movie> itemsMovieUpcoming = new ArrayList<>();
     private AdapterMovie adapterMovies;
     private String type = "Popular";
     private TextView searchFilter;
@@ -84,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void inicializarAdapter(){
-        adapterMovies = new AdapterMovie(this, itemsMovie);
+        adapterMovies = new AdapterMovie(this, itemsMovie, filename());
         movieList.setAdapter(adapterMovies);
 
         if(Util.pDialog != null)

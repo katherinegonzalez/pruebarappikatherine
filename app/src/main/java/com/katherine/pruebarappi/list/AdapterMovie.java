@@ -27,7 +27,10 @@ import com.katherine.pruebarappi.model.MovieDetailResponse;
 import com.katherine.pruebarappi.model.VideoResponse;
 import com.katherine.pruebarappi.res.ApiClient;
 import com.katherine.pruebarappi.res.ApiServiceClientInterface;
+import com.katherine.pruebarappi.storage.SaveInCache;
+import com.katherine.pruebarappi.util.ConvertGson;
 import com.katherine.pruebarappi.util.Dialogs;
+import com.katherine.pruebarappi.util.NetValidation;
 import com.katherine.pruebarappi.util.Util;
 import com.squareup.picasso.Picasso;
 
@@ -49,11 +52,15 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
     protected Activity activity;
     protected List<Movie> itemsMovies;
     protected List<Movie> itemsMoviesFiltered;
+    protected String filename; //En caso de que no haya conexión a internet
+    SaveInCache saveInCache = new SaveInCache();
+    ConvertGson convertGson = new ConvertGson();
 
-    public AdapterMovie(Activity activity, List<Movie> itemsMovies) {
+    public AdapterMovie(Activity activity, List<Movie> itemsMovies, String filename) {
         this.activity = activity;
         this.itemsMovies = itemsMovies;
         this.itemsMoviesFiltered = itemsMovies;
+        this.filename = filename;
     }
 
     @Override
@@ -90,8 +97,29 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
         holder.layoutMovie.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                NetValidation netValidation = new NetValidation();
+                Integer movieId = movie.getId();
+                if(netValidation.isNet(activity)) { //Si hay internet
+                    new MovieDetail().execute("movieDetail", movieId.toString());
+                }else{
 
-                new MovieDetail().execute("movieDetail", movie.getId().toString());
+                    if(!saveInCache.getDataInCache(activity, filename).isEmpty()){ //Si no hay internet reviso los datos que hay en cahche
+                        Util.movieDetail = new Movie();
+                        Util.movieDetail = convertGson.getDetailFromDesearilizingGson( movieId, saveInCache.getDataInCache(activity, filename));
+                        if(Util.movieDetail != null){
+                            //Si no hay internet no se muestra un video
+                            Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
+                            activity.startActivity(myIntent);
+                        }else{
+                            Toast.makeText(activity, "En este momento no es posible mostrar el detalle de esta película. Intente más tarde cuando tenga conexión a internet", Toast.LENGTH_LONG).show();
+
+                        }
+
+                    }else{
+                        Toast.makeText(activity, "En este momento no es posible mostrar el detalle de esta película. Intente más tarde cuando tenga conexión a internet", Toast.LENGTH_LONG).show();
+
+                    }
+                }
 
             }
         });

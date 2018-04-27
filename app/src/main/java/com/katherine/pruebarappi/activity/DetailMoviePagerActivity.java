@@ -34,7 +34,6 @@ public class DetailMoviePagerActivity extends AppCompatActivity {
 
         pager = (ViewPager) findViewById(R.id.pager); // es el contenedor de los fragment del activity
         dotsLayout = (LinearLayout) findViewById(R.id.layoutDots); // barra de abajo para visualizar cuando se deslizan los fragment del activity
-
         data =  new ArrayList<>();
 
         DetailMovie1Fragment detailMovie1Fragment = new DetailMovie1Fragment();
@@ -45,21 +44,19 @@ public class DetailMoviePagerActivity extends AppCompatActivity {
 
         adapter = new PagerAdapter(getSupportFragmentManager(), data); // creo un adaptador de fragment para que me maneje los fragment como un carrusel
         pager.setAdapter(adapter); // mando el adaptador de fragments a el contenedor de la vista
-
         pager.setCurrentItem(currentPosition);
-        //adicionando los botones del dot para pasar entre fragments
-        addBottomDots(pager.getCurrentItem());
+        addBottomDots(pager.getCurrentItem()); //puntos para determinar slide del fragment
 
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                addBottomDots(position);
-                currentPosition = position;
+
             }
 
             @Override
             public void onPageSelected(int position) {
-
+                currentPosition = position;
+                addBottomDots(position);
             }
 
             @Override
