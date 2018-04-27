@@ -22,6 +22,7 @@ import com.katherine.pruebarappi.model.Movie;
 import com.katherine.pruebarappi.res.ApiClient;
 import com.katherine.pruebarappi.res.ApiServiceClientInterface;
 import com.katherine.pruebarappi.util.Dialogs;
+import com.katherine.pruebarappi.util.NetValidation;
 import com.katherine.pruebarappi.util.Util;
 
 import org.json.JSONObject;
@@ -42,11 +43,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private AdapterMovie adapterMovies;
     private String type = "Popular";
     private TextView searchFilter;
+    private NetValidation netValidation = new NetValidation();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //https://developers.themoviedb.org/3/movies/get-movie-videos
 
         movieList = (RecyclerView) findViewById(R.id.list_movies);
         LinearLayoutManager lim = new LinearLayoutManager(this);
@@ -83,7 +87,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         type = adapterView.getItemAtPosition(i).toString();
 
-        new Movies().execute();
+        if(netValidation.isNet(MainActivity.this)){ //Si hay internet
+
+        }else{
+            new Movies().execute();
+        }
 
     }
 
