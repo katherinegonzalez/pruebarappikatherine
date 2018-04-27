@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName;
 public class Video {
 
     @SerializedName("id")
-    private Long id;
+    private String id;
     @SerializedName("iso_639_1")
     private String iso6391;
     @SerializedName("iso_3166_1")
@@ -28,11 +28,11 @@ public class Video {
     public Video() {
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

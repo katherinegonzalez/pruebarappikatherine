@@ -1,6 +1,7 @@
 package com.katherine.pruebarappi.fragments;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,18 +9,29 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.youtube.player.YouTubeBaseActivity;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerView;
 import com.katherine.pruebarappi.R;
+import com.katherine.pruebarappi.activity.DetailMoviePagerActivity;
+import com.katherine.pruebarappi.activity.VideoActivity;
+import com.katherine.pruebarappi.util.Dialogs;
+import com.katherine.pruebarappi.util.NetValidation;
 import com.katherine.pruebarappi.util.Util;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetailMovie2Fragment extends Fragment {
+public class DetailMovie2Fragment extends Fragment implements View.OnClickListener {
 
     private View v;
-    private TextView txtTitleMovie, txtOriginalTitle, txtGenre, txtVoteCount, txtVoteAverage, txtPopularity, txtReleaseDate, txtLanguage, txtHomepage;
+    private TextView txtTitleMovie, txtOriginalTitle, txtGenre, txtVoteCount, txtVoteAverage, txtPopularity, txtReleaseDate, txtLanguage, txtHomepage, txtVideo;
     private String titleMovie = "", originalTitle = "", genre ="", voteCount = "", voteAverage = "", popularity = "", releaseDate = "", language = "", homepage ="";
+    private NetValidation netValidation = new NetValidation();
+    private View line;
     public DetailMovie2Fragment() {
         // Required empty public constructor
     }
@@ -30,6 +42,7 @@ public class DetailMovie2Fragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         v = inflater.inflate(R.layout.fragment_detail_movie2, container, false);
+
         return v;
     }
 
@@ -46,6 +59,8 @@ public class DetailMovie2Fragment extends Fragment {
         txtReleaseDate = v.findViewById(R.id.txt_release_date);
         txtLanguage = v.findViewById(R.id.txt_language);
         txtHomepage = v.findViewById(R.id.txt_homepage);
+        txtVideo = v.findViewById(R.id.video);
+        line = v.findViewById(R.id.line_video);
 
         setData();
 
@@ -60,11 +75,32 @@ public class DetailMovie2Fragment extends Fragment {
         txtLanguage.setText(language);
         txtHomepage.setText(homepage);
 
+        if(netValidation.isNet(getActivity())){
+            txtVideo.setOnClickListener(this);
+
+        }else{
+            txtVideo.setVisibility(View.GONE);
+            line.setVisibility(View.GONE);
+            Toast.makeText(getContext(), "Para ver el trailer se requiere conexión a internet!", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     public void setData(){
 
         if(Util.movieDetailResponse != null){ //Si hay internet obtengo los datos del objeto que me retorna el endpoint
+
+            if(Util.VIDEO_KEY == null){
+                txtVideo.setVisibility(View.GONE);
+                line.setVisibility(View.GONE);
+            }else{
+                if(Util.VIDEO_KEY.equals("")){
+                    txtVideo.setVisibility(View.GONE);
+                    line.setVisibility(View.GONE);
+                }
+            }
+
+
 
             titleMovie = Util.movieDetailResponse.getTitle();
             originalTitle = Util.movieDetailResponse.getOriginalTitle();
@@ -105,6 +141,7 @@ public class DetailMovie2Fragment extends Fragment {
         }
 
         if(Util.movieDetail != null){ //Si no hay internet obtengo los datos del objeto de la lista->Algunos datos no existen en ese objeto por lo cual quedan vacíos
+
             titleMovie = Util.movieDetail.getTitle();
             originalTitle = Util.movieDetail.getOriginalTitle();
             genre ="";
@@ -116,6 +153,24 @@ public class DetailMovie2Fragment extends Fragment {
             language = Util.movieDetail.getOriginalLanguage();
             homepage ="";
 
+        }
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        Dialogs.definirProgressDialog(getActivity());
+        Util.pDialog.show();
+        Intent myIntent = new Intent(getActivity(), VideoActivity.class);
+        getActivity().startActivity(myIntent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if(Util.pDialog != null){
+            Util.pDialog.dismiss();
         }
     }
 }

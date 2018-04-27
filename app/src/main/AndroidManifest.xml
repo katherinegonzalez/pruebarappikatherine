@@ -24,7 +24,8 @@
         <activity
             android:name=".activity.DetailMoviePagerActivity"
             android:label="@string/title_activity_detail_movie_pager"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
+        <activity android:name=".activity.VideoActivity"></activity>
     </application>
 
 </manifest>

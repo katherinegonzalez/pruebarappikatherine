@@ -202,12 +202,12 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
                     if(response.body() != null){
                         Util.movieDetailResponse = new MovieDetailResponse();
                         Util.movieDetailResponse = response.body();
-                        if(response.body().getVideo()){
+                        //if(response.body().getVideo()){
                             new MovieDetail().execute("video", response.body().getId().toString());
-                        }else{ //Sino tiene video ir directamente al detalle
-                            Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
-                            activity.startActivity(myIntent);
-                        }
+                        //}else{ //Sino tiene video ir directamente al detalle
+                            //Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
+                            //activity.startActivity(myIntent);
+                        //}
 
                     }
 
@@ -259,9 +259,6 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
 
                     if(response.body() != null){
                         Util.VIDEO_KEY = response.body().getResults().get(0).getKey(); //Tomo unicamente el primer video
-
-                        Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
-                        activity.startActivity(myIntent);
                     }
 
                 }else{
@@ -282,6 +279,9 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
 
                 }
 
+                Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
+                activity.startActivity(myIntent);
+
 
             }
 
@@ -289,7 +289,11 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
             public void onFailure(Call<VideoResponse> call, Throwable t) {
                 if(Util.pDialog != null)
                     Util.pDialog.dismiss();
-                Toast.makeText(activity, "Ha ocurrido un error al intentar conectar con el servidor! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
+
+                Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
+                activity.startActivity(myIntent);
+
+                Toast.makeText(activity, "Ha ocurrido un error al intentar obtener el video del trailer! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
             }
         });
     }
