@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onFailure(Call<GeneralResponse> call, Throwable t) {
                 if(Util.pDialog != null)
                     Util.pDialog.dismiss();
-                Toast.makeText(MainActivity.this, "Ha ocurrido un error al intentar conectar con el servidor! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
+                Log.d("Throwable", t.getMessage());
             }
         });
     }
