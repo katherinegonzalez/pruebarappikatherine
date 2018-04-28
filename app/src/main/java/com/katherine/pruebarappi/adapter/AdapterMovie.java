@@ -205,7 +205,7 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
                         Log.d("jObjError", jObjError +"");
-                        error= jObjError.get("error").toString();
+                        error= jObjError.get("errors").toString();
                         Log.d("ERROR PELICULAS", error);
                     } catch (Exception e) {
                         Log.d("EXCEPCION ERROR", e +"");
@@ -254,7 +254,7 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
                         Log.d("jObjError", jObjError +"");
-                        error= jObjError.get("error").toString();
+                        error= jObjError.get("errors").toString();
                         Log.d("ERROR PELICULAS", error);
                     } catch (Exception e) {
                         Log.d("EXCEPCION ERROR", e +"");

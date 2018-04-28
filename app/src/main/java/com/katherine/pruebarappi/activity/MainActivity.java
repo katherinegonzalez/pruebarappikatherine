@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
                         Log.d("jObjError", jObjError +"");
-                        error= jObjError.get("error").toString();
+                        error= jObjError.get("errors").toString();
                         Log.d("ERROR PELICULAS", error);
                     } catch (Exception e) {
                         Log.d("EXCEPCION ERROR", e +"");
@@ -202,24 +202,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }else{
                         if(Util.pDialog != null)
                             Util.pDialog.dismiss();
-                        Toast.makeText(MainActivity.this, "No hay resultados para esta búsqueda", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "No hay resultados para esta búsqueda", Toast.LENGTH_SHORT).show();
                     }
 
                 }else{
                     if(Util.pDialog != null)
                         Util.pDialog.dismiss();
 
-                    String error = "Ha ocurrido un error al intentar conectar con el servidor! Intente nuevamente";
+
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
                         Log.d("jObjError", jObjError +"");
-                        error= jObjError.get("error").toString();
+                        String error = jObjError.get("errors").toString();
                         Log.d("ERROR PELICULAS", error);
                     } catch (Exception e) {
                         Log.d("EXCEPCION ERROR", e +"");
                     }
-
-                    Toast.makeText(MainActivity.this, error, Toast.LENGTH_LONG).show();
 
                 }
 
@@ -229,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onFailure(Call<GeneralResponse> call, Throwable t) {
                 if(Util.pDialog != null)
                     Util.pDialog.dismiss();
-                Log.d("Throwable", t.getMessage());
+                Toast.makeText(MainActivity.this, "Ha ocurrido un error al intentar conectar con el servidor! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
             }
         });
     }
