@@ -5,6 +5,18 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_detail_movie_pager">DetailMoviePagerActivity</string>
 
+    <string name="peliculas">Películas</string>
+    <string name="ver_trailer">Click aquí para ver trailer</string>
+    <string name="titulo_original">Título Original: </string>
+    <string name="genero">Género: </string>
+    <string name="conteo_votos">Conteo de votos: </string>
+    <string name="promedio_votos">Promedio de votos: </string>
+    <string name="popularidad">Popularidad: </string>
+    <string name="fecha">Fecha: </string>
+    <string name="lenguaje">Lenguaje: </string>
+    <string name="homepage">Homepage: </string>
+    <string name="calificacion">Calificación: </string>
     <string name="error_player">Ocurrió un error inicializando Youtube (%1$s)</string>
+
 
 </resources>

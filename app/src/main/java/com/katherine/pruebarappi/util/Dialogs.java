@@ -11,7 +11,10 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class Dialogs {
 
-    public static void definirProgressDialog(Activity activity){
+    public Dialogs() {
+    }
+
+    public void definirProgressDialog(Activity activity){
         if(Util.pDialog != null){
             Util.pDialog.dismiss();
         }

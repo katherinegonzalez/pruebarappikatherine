@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,11 +28,15 @@ import com.katherine.pruebarappi.util.Util;
  */
 public class DetailMovie2Fragment extends Fragment implements View.OnClickListener {
 
-    private View v;
+    private View v, line;
     private TextView txtTitleMovie, txtOriginalTitle, txtGenre, txtVoteCount, txtVoteAverage, txtPopularity, txtReleaseDate, txtLanguage, txtHomepage, txtVideo;
+    private ImageView imgVideo;
     private String titleMovie = "", originalTitle = "", genre ="", voteCount = "", voteAverage = "", popularity = "", releaseDate = "", language = "", homepage ="";
     private NetValidation netValidation = new NetValidation();
-    private View line;
+    private Dialogs dialogs = new Dialogs();
+
+
+
     public DetailMovie2Fragment() {
         // Required empty public constructor
     }
@@ -61,6 +66,9 @@ public class DetailMovie2Fragment extends Fragment implements View.OnClickListen
         txtHomepage = v.findViewById(R.id.txt_homepage);
         txtVideo = v.findViewById(R.id.video);
         line = v.findViewById(R.id.line_video);
+        imgVideo = v.findViewById(R.id.img_video);
+        imgVideo.setOnClickListener(this);
+        txtVideo.setOnClickListener(this);
 
         setData();
 
@@ -75,32 +83,11 @@ public class DetailMovie2Fragment extends Fragment implements View.OnClickListen
         txtLanguage.setText(language);
         txtHomepage.setText(homepage);
 
-        if(netValidation.isNet(getActivity())){
-            txtVideo.setOnClickListener(this);
-
-        }else{
-            txtVideo.setVisibility(View.GONE);
-            line.setVisibility(View.GONE);
-            Toast.makeText(getContext(), "Para ver el trailer se requiere conexión a internet!", Toast.LENGTH_LONG).show();
-        }
-
     }
 
     public void setData(){
 
         if(Util.movieDetailResponse != null){ //Si hay internet obtengo los datos del objeto que me retorna el endpoint
-
-            if(Util.VIDEO_KEY == null){
-                txtVideo.setVisibility(View.GONE);
-                line.setVisibility(View.GONE);
-            }else{
-                if(Util.VIDEO_KEY.equals("")){
-                    txtVideo.setVisibility(View.GONE);
-                    line.setVisibility(View.GONE);
-                }
-            }
-
-
 
             titleMovie = Util.movieDetailResponse.getTitle();
             originalTitle = Util.movieDetailResponse.getOriginalTitle();
@@ -159,10 +146,28 @@ public class DetailMovie2Fragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onClick(View view) {
-        Dialogs.definirProgressDialog(getActivity());
-        Util.pDialog.show();
-        Intent myIntent = new Intent(getActivity(), VideoActivity.class);
-        getActivity().startActivity(myIntent);
+
+
+
+        if(netValidation.isNet(getActivity())){
+            if(Util.VIDEO_KEY != null){
+                if(!Util.VIDEO_KEY.equals("")){
+                    dialogs.definirProgressDialog(getActivity());
+                    Util.pDialog.show();
+                    Intent myIntent = new Intent(getActivity(), VideoActivity.class);
+                    getActivity().startActivity(myIntent);
+
+                }else{
+                    Toast.makeText(getContext(), "Esta película no tiene trailer!", Toast.LENGTH_LONG).show();
+                }
+            }else{
+                Toast.makeText(getContext(), "Esta película no tiene trailer!", Toast.LENGTH_LONG).show();
+            }
+
+        }else{
+            Toast.makeText(getContext(), "Para ver el trailer se requiere conexión a internet!", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     @Override

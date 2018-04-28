@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context="com.katherine.pruebarappi.fragments.DetailMovie1Fragment"
     android:orientation="vertical"
-    android:background="@color/grey"
+    android:background="@color/light_blue"
     android:padding="15dp">
 
     <TextView

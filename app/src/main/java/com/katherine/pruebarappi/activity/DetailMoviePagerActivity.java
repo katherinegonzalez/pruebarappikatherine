@@ -33,19 +33,19 @@ public class DetailMoviePagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail_movie_pager);
 
         pager = (ViewPager) findViewById(R.id.pager); // es el contenedor de los fragment del activity
-        dotsLayout = (LinearLayout) findViewById(R.id.layoutDots); // barra de abajo para visualizar cuando se deslizan los fragment del activity
         data =  new ArrayList<>();
 
         DetailMovie1Fragment detailMovie1Fragment = new DetailMovie1Fragment();
-        data.add(detailMovie1Fragment); // agrego a la lista el fragment de la tarjeta del conductor
-
         DetailMovie2Fragment detailMovie2Fragment =  new DetailMovie2Fragment();
+        data.add(detailMovie1Fragment);
         data.add(detailMovie2Fragment);
 
         adapter = new PagerAdapter(getSupportFragmentManager(), data); // creo un adaptador de fragment para que me maneje los fragment como un carrusel
-        pager.setAdapter(adapter); // mando el adaptador de fragments a el contenedor de la vista
+        pager.setAdapter(adapter); // pongo el adaptador de fragments en el contenedor de la vista
         pager.setCurrentItem(currentPosition);
-        addBottomDots(pager.getCurrentItem()); //puntos para determinar slide del fragment
+
+        dotsLayout = (LinearLayout) findViewById(R.id.layoutDots); //barra de abajo para visualizar los puntos cuando se deslizan los fragment del activity
+        addBottomDots(pager.getCurrentItem()); //manejo de los puntos para determinar slide del fragment
 
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -68,7 +68,6 @@ public class DetailMoviePagerActivity extends AppCompatActivity {
 
     private void addBottomDots(int currentPage) {
         dots = new TextView[data.size()];
-
         int colorsActive = getResources().getColor(R.color.dot_light_screen);
         int colorsInactive = getResources().getColor(R.color.dot_dark_screen);
 

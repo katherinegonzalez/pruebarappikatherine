@@ -49,12 +49,14 @@ import retrofit2.Response;
 
 public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovieViewHolder> implements Filterable{
 
-    protected Activity activity;
-    protected List<Movie> itemsMovies;
-    protected List<Movie> itemsMoviesFiltered;
-    protected String filename; //En caso de que no haya conexión a internet
-    SaveInCache saveInCache = new SaveInCache();
-    ConvertGson convertGson = new ConvertGson();
+    private Activity activity;
+    private List<Movie> itemsMovies;
+    private List<Movie> itemsMoviesFiltered;
+    private String filename; //En caso de que no haya conexión a internet
+    private SaveInCache saveInCache = new SaveInCache();
+    private ConvertGson convertGson = new ConvertGson();
+    private Dialogs dialogs = new Dialogs();
+    private String language = "es-CO";
 
     public AdapterMovie(Activity activity, List<Movie> itemsMovies, String filename) {
         this.activity = activity;
@@ -73,7 +75,6 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
     @Override
     public void onBindViewHolder(AdapterMovieViewHolder holder, int position) {
         final Movie movie = itemsMoviesFiltered.get(position);
-
 
         holder.txtTitle.setText(movie.getTitle());
         holder.txtScore.setText(movie.getVoteAverage().toString());
@@ -100,7 +101,9 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
                 NetValidation netValidation = new NetValidation();
                 Integer movieId = movie.getId();
                 if(netValidation.isNet(activity)) { //Si hay internet
-                    new MovieDetail().execute("movieDetail", movieId.toString());
+                    dialogs.definirProgressDialog(activity);
+                    Util.pDialog.show();
+                    getMovieDetail(movieId);
                 }else{
 
                     if(!saveInCache.getDataInCache(activity, filename).isEmpty()){ //Si no hay internet reviso los datos que hay en cahche
@@ -112,7 +115,6 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
                             activity.startActivity(myIntent);
                         }else{
                             Toast.makeText(activity, "En este momento no es posible mostrar el detalle de esta película. Intente más tarde cuando tenga conexión a internet", Toast.LENGTH_LONG).show();
-
                         }
 
                     }else{
@@ -131,7 +133,7 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
     }
 
     @Override
-    public Filter getFilter() {
+    public Filter getFilter() { //Para el filtro offline
         return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence charSequence) {
@@ -183,32 +185,22 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
         }
     }
 
-    public void getMovieDetail(Long id){
+    public void getMovieDetail(Integer id){
 
         ApiServiceClientInterface apiService = ApiClient.getClient().create(ApiServiceClientInterface.class);
 
-        Call<MovieDetailResponse> call = apiService.getMovieDetails(id, Util.API_KEY);
+        Call<MovieDetailResponse> call = apiService.getMovieDetails(id, Util.API_KEY, language);
         call.enqueue(new Callback<MovieDetailResponse>() {
 
             @Override
             public void onResponse(Call<MovieDetailResponse> call, final Response<MovieDetailResponse> response) {
-                System.out.println("ENTRA A ON RESPONSE PELICULAS: " + response.body());
-                System.out.println("ENTRA A ON RESPONSE RAW PELICULAS: " + response.raw());
-                System.out.println("ENTRA A ON RESPONSE CODE PELICULAS: " + response.code());
-                System.out.println("ENTRA A ON RESPONSE HEADERS PELICULAS: " + response.headers());
 
                 if(response.isSuccessful()){
 
                     if(response.body() != null){
                         Util.movieDetailResponse = new MovieDetailResponse();
                         Util.movieDetailResponse = response.body();
-                        //if(response.body().getVideo()){
-                            new MovieDetail().execute("video", response.body().getId().toString());
-                        //}else{ //Sino tiene video ir directamente al detalle
-                            //Intent myIntent = new Intent(activity, DetailMoviePagerActivity.class);
-                            //activity.startActivity(myIntent);
-                        //}
-
+                        getVideo(response.body().getId());
                     }
 
                 }else{
@@ -245,25 +237,24 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
 
         ApiServiceClientInterface apiService = ApiClient.getClient().create(ApiServiceClientInterface.class);
 
-        Call<VideoResponse> call = apiService.getVideo(id, Util.API_KEY);
+        Call<VideoResponse> call = apiService.getVideo(id, Util.API_KEY, language);
         call.enqueue(new Callback<VideoResponse>() {
 
             @Override
             public void onResponse(Call<VideoResponse> call, final Response<VideoResponse> response) {
-                System.out.println("ENTRA A ON RESPONSE PELICULAS: " + response.body());
-                System.out.println("ENTRA A ON RESPONSE RAW PELICULAS: " + response.raw());
-                System.out.println("ENTRA A ON RESPONSE CODE PELICULAS: " + response.code());
-                System.out.println("ENTRA A ON RESPONSE HEADERS PELICULAS: " + response.headers());
+
+                if(Util.pDialog != null)
+                    Util.pDialog.dismiss();
 
                 if(response.isSuccessful()){
 
                     if(response.body() != null){
-                        Util.VIDEO_KEY = response.body().getResults().get(0).getKey(); //Tomo unicamente el primer video
+                        if(!response.body().getResults().isEmpty()){
+                            Util.VIDEO_KEY = response.body().getResults().get(0).getKey(); //Tomo unicamente el primer video
+                        }
                     }
 
                 }else{
-                    if(Util.pDialog != null)
-                        Util.pDialog.dismiss();
 
                     String error = "Ha ocurrido un error al intentar conectar con el servidor! Intente nuevamente";
                     try {
@@ -298,28 +289,4 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
         });
     }
 
-    public class MovieDetail extends AsyncTask<String, String, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Dialogs.definirProgressDialog(activity);
-            Util.pDialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            switch (strings[0]){
-                case "movieDetail":
-                    getMovieDetail(Long.parseLong(strings[1]));
-                    break;
-                case "video":
-                    getVideo(Long.parseLong(strings[1]));
-                    break;
-            }
-
-            return null;
-        }
-    }
 }

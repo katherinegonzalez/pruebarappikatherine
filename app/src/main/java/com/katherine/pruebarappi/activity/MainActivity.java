@@ -1,5 +1,6 @@
 package com.katherine.pruebarappi.activity;
 
+import android.app.DownloadManager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -48,39 +49,43 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private TextView searchFilter;
     private NetValidation netValidation = new NetValidation();
     private SaveInCache saveInCache = new SaveInCache();
-    ConvertGson convertGson = new ConvertGson();
+    private ConvertGson convertGson = new ConvertGson();
+    private Dialogs dialogs = new Dialogs();
+    private String language = "es-CO";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
         //https://developers.themoviedb.org/3/movies/get-movie-videos
 
-        movieList = (RecyclerView) findViewById(R.id.list_movies);
+        movieList = findViewById(R.id.list_movies);
         LinearLayoutManager lim = new LinearLayoutManager(this);
         lim.setOrientation(LinearLayoutManager.VERTICAL);
         movieList.setLayoutManager(lim);
 
-        spinnerMovies = (Spinner) findViewById(R.id.spinner_movies);
+        initializeSpinnerAdapter();
 
+        searchFilter = findViewById(R.id.search_filter);
+        searchFilter.addTextChangedListener(this);
+    }
+
+    public void initializeSpinnerAdapter(){
+        spinnerMovies = findViewById(R.id.spinner_movies);
         List<String> typesOfMoviesList = new ArrayList<>();
         typesOfMoviesList.add("Popular");
         typesOfMoviesList.add("Top Rated");
         typesOfMoviesList.add("Upcoming");
+        typesOfMoviesList.add("Todas (Búsqueda por Internet)");
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, typesOfMoviesList);
-
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.text_view_spinner, typesOfMoviesList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
         spinnerMovies.setAdapter(adapter);
         spinnerMovies.setOnItemSelectedListener(this);
-
-        searchFilter = (TextView) findViewById(R.id.search_filter);
-        searchFilter.addTextChangedListener(this);
     }
 
-    public void inicializarAdapter(){
+    public void initializeListMoviesAdapter(){
         adapterMovies = new AdapterMovie(this, itemsMovie, filename());
         movieList.setAdapter(adapterMovies);
 
@@ -92,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void saveData(GeneralResponse generalResponse, String filename){
         String jsonMovieList = convertGson.serializingGson(generalResponse);
         saveInCache.saveInCache(this, filename, jsonMovieList);
-
     }
 
     public String filename(){
@@ -111,47 +115,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return filename;
     }
 
-
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        type = adapterView.getItemAtPosition(i).toString();
-
-        if(netValidation.isNet(MainActivity.this)){ //Si hay internet
-            new Movies().execute();
-        }else{
-            if(!saveInCache.getDataInCache(this, filename()).isEmpty()){ //Si no hay internet reviso los datos que hay en cahche
-                GeneralResponse generalResponse = convertGson.deserializingGson(saveInCache.getDataInCache(this, filename()));
-                itemsMovie = generalResponse.getResults();
-                inicializarAdapter();
-            }else{
-                Toast.makeText(MainActivity.this, "En este momento no hay películas para mostrar en esta categoría. Intente más tarde cuando tenga conexión a internet", Toast.LENGTH_LONG).show();
-                itemsMovie = new ArrayList<>();
-                inicializarAdapter();
-
-            }
-        }
-
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
-
-    }
-
     public void getMovies(String type){
+
+        dialogs.definirProgressDialog(this);
+        Util.pDialog.show();
 
         ApiServiceClientInterface apiService = ApiClient.getClient().create(ApiServiceClientInterface.class);
 
         Call<GeneralResponse> call = null;
+
         switch (type){
             case "Popular":
-                call = apiService.getPopularMovies(Util.API_KEY);
+                call = apiService.getPopularMovies(Util.API_KEY, language);
                 break;
             case "Top Rated":
-                call = apiService.getTopRatedMovies(Util.API_KEY);
+                call = apiService.getTopRatedMovies(Util.API_KEY, language);
                 break;
             case "Upcoming":
-                call = apiService.getUpcomingMovies(Util.API_KEY);
+                call = apiService.getUpcomingMovies(Util.API_KEY, language);
                 break;
         }
 
@@ -170,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         saveData(response.body(), filename()); //Save data in chaché
 
                         itemsMovie = response.body().getResults();
-                        inicializarAdapter();
+                        initializeListMoviesAdapter();
 
                     }else{
                         if(Util.pDialog != null)
@@ -196,6 +177,62 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 }
 
+            }
+
+            @Override
+            public void onFailure(Call<GeneralResponse> call, Throwable t) {
+                if(Util.pDialog != null)
+                    Util.pDialog.dismiss();
+                Toast.makeText(MainActivity.this, "Ha ocurrido un error al intentar conectar con el servidor! Revise su conexión e intente nuevamente", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void search(String query){
+
+        ApiServiceClientInterface apiService = ApiClient.getClient().create(ApiServiceClientInterface.class);
+
+        Call<GeneralResponse> call = apiService.search(query, Util.API_KEY, language);
+
+
+        call.enqueue(new Callback<GeneralResponse>() {
+
+            @Override
+            public void onResponse(Call<GeneralResponse> call, final Response<GeneralResponse> response) {
+                System.out.println("ENTRA A ON RESPONSE PELICULAS: " + response.body());
+                System.out.println("ENTRA A ON RESPONSE RAW PELICULAS: " + response.raw());
+                System.out.println("ENTRA A ON RESPONSE CODE PELICULAS: " + response.code());
+                System.out.println("ENTRA A ON RESPONSE HEADERS PELICULAS: " + response.headers());
+
+                if(response.isSuccessful()){
+                    if(!response.body().getResults().isEmpty()){
+
+                        itemsMovie = response.body().getResults();
+                        initializeListMoviesAdapter();
+
+                    }else{
+                        if(Util.pDialog != null)
+                            Util.pDialog.dismiss();
+                        Toast.makeText(MainActivity.this, "No hay resultados para esta búsqueda", Toast.LENGTH_LONG).show();
+                    }
+
+                }else{
+                    if(Util.pDialog != null)
+                        Util.pDialog.dismiss();
+
+                    String error = "Ha ocurrido un error al intentar conectar con el servidor! Intente nuevamente";
+                    try {
+                        JSONObject jObjError = new JSONObject(response.errorBody().string());
+                        Log.d("jObjError", jObjError +"");
+                        error= jObjError.get("error").toString();
+                        Log.d("ERROR PELICULAS", error);
+                    } catch (Exception e) {
+                        Log.d("EXCEPCION ERROR", e +"");
+                    }
+
+                    Toast.makeText(MainActivity.this, error, Toast.LENGTH_LONG).show();
+
+                }
 
             }
 
@@ -209,39 +246,63 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        type = adapterView.getItemAtPosition(i).toString();
+
+        if(netValidation.isNet(MainActivity.this)){ //Si hay internet
+
+            if(type.equals("Todas (Búsqueda por Internet)")){
+                search("a");
+            }else{
+                getMovies(type);
+            }
+        }else{
+            if(!type.equals("Todas (Búsqueda por Internet)")){
+                if(!saveInCache.getDataInCache(this, filename()).isEmpty()){ //Si no hay internet reviso los datos que hay en cahche
+                    GeneralResponse generalResponse = convertGson.deserializingGson(saveInCache.getDataInCache(this, filename()));
+                    itemsMovie = generalResponse.getResults();
+                    initializeListMoviesAdapter();
+                }else{
+                    Toast.makeText(MainActivity.this, "En este momento no hay películas para mostrar en esta categoría. Intente más tarde cuando tenga conexión a internet", Toast.LENGTH_LONG).show();
+                    itemsMovie = new ArrayList<>();
+                    initializeListMoviesAdapter();
+
+                }
+            }else{
+                Toast.makeText(MainActivity.this, "Para elegir esta opción necesitas conexión a internet!", Toast.LENGTH_LONG).show();
+            }
+        }
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+
+
+    @Override
     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
     }
 
     @Override
     public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-        //adapterMovies.getFilter().filter(charSequence);
+        if(type.equals("Todas (Búsqueda por Internet)")) {
+            String query = charSequence.toString();
+            search(query);
+        }
     }
 
     @Override
     public void afterTextChanged(Editable editable) {
-        adapterMovies.getFilter().filter(editable.toString());
-        // refreshing recycler view
-        adapterMovies.notifyDataSetChanged();
-        movieList.setAdapter(adapterMovies);
 
-    }
-
-    public class Movies extends AsyncTask<String, String, String>{
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Dialogs.definirProgressDialog(MainActivity.this);
-            Util.pDialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            getMovies(type);
-
-            return null;
+        if(!type.equals("Todas (Búsqueda por Internet)")){
+            adapterMovies.getFilter().filter(editable.toString());
+            //Actualizar recyvler view
+            adapterMovies.notifyDataSetChanged();
+            movieList.setAdapter(adapterMovies);
         }
     }
 
