@@ -137,10 +137,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             @Override
             public void onResponse(Call<GeneralResponse> call, final Response<GeneralResponse> response) {
-                System.out.println("ENTRA A ON RESPONSE PELICULAS: " + response.body());
-                System.out.println("ENTRA A ON RESPONSE RAW PELICULAS: " + response.raw());
-                System.out.println("ENTRA A ON RESPONSE CODE PELICULAS: " + response.code());
-                System.out.println("ENTRA A ON RESPONSE HEADERS PELICULAS: " + response.headers());
 
                 if(response.isSuccessful()){
                     if(!response.body().getResults().isEmpty()){
@@ -196,10 +192,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             @Override
             public void onResponse(Call<GeneralResponse> call, final Response<GeneralResponse> response) {
-                System.out.println("ENTRA A ON RESPONSE PELICULAS: " + response.body());
-                System.out.println("ENTRA A ON RESPONSE RAW PELICULAS: " + response.raw());
-                System.out.println("ENTRA A ON RESPONSE CODE PELICULAS: " + response.code());
-                System.out.println("ENTRA A ON RESPONSE HEADERS PELICULAS: " + response.headers());
 
                 if(response.isSuccessful()){
                     if(!response.body().getResults().isEmpty()){
