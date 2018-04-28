@@ -2,7 +2,7 @@ package com.katherine.pruebarappi.activity;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import com.katherine.pruebarappi.list.PagerAdapter;
+import com.katherine.pruebarappi.adapter.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;

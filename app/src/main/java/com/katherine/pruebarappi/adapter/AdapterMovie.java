@@ -1,16 +1,12 @@
-package com.katherine.pruebarappi.list;
+package com.katherine.pruebarappi.adapter;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.location.LocationListener;
-import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -20,8 +16,6 @@ import android.widget.Toast;
 
 import com.katherine.pruebarappi.R;
 import com.katherine.pruebarappi.activity.DetailMoviePagerActivity;
-import com.katherine.pruebarappi.activity.MainActivity;
-import com.katherine.pruebarappi.model.GeneralResponse;
 import com.katherine.pruebarappi.model.Movie;
 import com.katherine.pruebarappi.model.MovieDetailResponse;
 import com.katherine.pruebarappi.model.VideoResponse;
@@ -177,11 +171,11 @@ public class AdapterMovie extends RecyclerView.Adapter<AdapterMovie.AdapterMovie
         public AdapterMovieViewHolder(View itemView) {
             super(itemView);
 
-            imageMovie = (ImageView)itemView.findViewById(R.id.img_movie);
-            layoutMovie = (LinearLayout)itemView.findViewById(R.id.lyt_item);
-            txtTitle = (TextView) itemView.findViewById(R.id.txt_title);
-            txtScore = (TextView) itemView.findViewById(R.id.txt_score);
-            txtLanguage = (TextView) itemView.findViewById(R.id.txt_language);
+            imageMovie = itemView.findViewById(R.id.img_movie);
+            layoutMovie = itemView.findViewById(R.id.lyt_item);
+            txtTitle = itemView.findViewById(R.id.txt_title);
+            txtScore =  itemView.findViewById(R.id.txt_score);
+            txtLanguage = itemView.findViewById(R.id.txt_language);
         }
     }
 

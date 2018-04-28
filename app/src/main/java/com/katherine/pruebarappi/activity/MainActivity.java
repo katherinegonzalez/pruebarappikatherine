@@ -1,8 +1,5 @@
 package com.katherine.pruebarappi.activity;
 
-import android.app.DownloadManager;
-import android.content.Context;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,7 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.katherine.pruebarappi.R;
-import com.katherine.pruebarappi.list.AdapterMovie;
+import com.katherine.pruebarappi.adapter.AdapterMovie;
 import com.katherine.pruebarappi.model.GeneralResponse;
 import com.katherine.pruebarappi.model.Movie;
 import com.katherine.pruebarappi.res.ApiClient;
