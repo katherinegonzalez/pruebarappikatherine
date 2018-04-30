@@ -52,3 +52,15 @@
 ### 2. ¿Qué características tiene, según su opinión, un "buen" código o código limpio? ###
 
 Un código limpio o un "buen código" debe estar bien estructurado, organizado en paquetes de tal manera que sea fácil de entender; los nombres de los paquetes, clases, métodos y variables deben ser entendibles permitiendo así una mejor comprensión al leer el código; debe poder ser reutilizado fácilmente, cumpliendo con el principio de responsabilidad y evitar las redundancias de código, siguiendo el principio DRY(Don't repeat yourself). Además es importante evitar métodos y clases muy largos.
+
+### Requerimientos Cumplidos ###
+
+* Se consume el API de películas y series del link del documento
+* Tiene tres categorías de películas y/o series: Popular, Top Rated, Upcoming.
+* Se puede visualizar el detalle de cada película y/o series.
+* Funciona tanto online como offline (cache). 
+* Tiene un buscador offline por categorías. 
+* Visualización de los videos en el detalle de cada ítem. 
+* Transiciones, UI/UX. 
+* Buscador Online.
+* Pruebas Unitarias.
